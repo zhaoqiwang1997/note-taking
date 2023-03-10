@@ -18,3 +18,10 @@ def createNote(request, tag, title, content):
         )
         return HttpResponse("New note created")
     return HttpResponse("Note already exists")
+
+def getList(request):
+    note_list = Note.objects.all()
+    titles = []
+    for note in note_list:
+        titles.append(note.title)
+    return HttpResponse(titles)
