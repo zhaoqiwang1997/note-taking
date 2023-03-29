@@ -5,6 +5,9 @@ from datetime import date
 class Tag(models.Model):
     name = models.CharField(max_length=50, primary_key=True)
 
+    def __str__(self) -> str:
+        return self.name
+
 class Note(models.Model):
     title = models.CharField(max_length=100, primary_key=True)
     date = models.DateField(default=date.today)
