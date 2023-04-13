@@ -16,9 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
+from rest_framework import routers
+
+router = routers.DefaultRouter()
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(('notetaking/'), include('notetaking.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
+    path('', include(router.urls)),
 ]

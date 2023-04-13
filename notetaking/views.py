@@ -1,21 +1,56 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from notetaking.models import Tag, Note
+from notetaking.models import Tag, Note, Folder
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from notetaking.serializers import NoteSerializer
 
 # Create your views here.
+@api_view(['GET'])
+def get_note(request, title):
+    try:
+        note = Note.objects.get(title=title)
+        serializer = NoteSerializer(note)
+        return Response({'message': 'Note is found!', 'note': serializer.data})
+    except Note.DoesNotExist:
+        return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
+
+
+# For Admin site
 def hello(request):
     return HttpResponse("Hello world")
 
-def createNote(request, tag, title, content):
-    obj, created = Tag.objects.get_or_create(
-        name=tag,
-    )
+def createNote(request, tag, title, content, folder):
+    obj_tag = ""
+    obj_folder = ""
+    if not Tag.objects.filter(pk=tag).exists():
+        obj_tag = Tag(name=tag)
+        obj_tag.save()
+    else:
+        obj_tag = Tag.objects.get(name=tag)
+
+    if not Folder.objects.filter(pk=folder).exists():
+        obj_folder = Folder(name=folder)
+        obj_folder.save()
+    else:
+        obj_folder = Tag.objects.get(name=tag)
+
     if not Note.objects.filter(pk=title).exists():
-        Note.objects.create(
+        obj_note = Note(
             title=title,
-            tag=obj,
+            tag=obj_tag,
+            folder=obj_folder,
             content=content
         )
+        obj_note.save()
+
+        obj_tag.notes_in_tag.add(obj_note)
+        obj_folder.notes_in_folder.add(obj_note)
+
+        obj_tag.save()
+        obj_folder.save()
+
         return HttpResponse("New note created")
     return HttpResponse("Note already exists")
 

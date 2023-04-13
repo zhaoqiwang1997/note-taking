@@ -1,5 +1,8 @@
 from django.contrib import admin
-from notetaking.models import Tag, Note
+from notetaking.models import Tag, Note, Folder
+from django.urls import reverse
+from django.utils.html import format_html
+from urllib.parse import urlencode
 
 admin.site.site_header = 'Note taking system'
 admin.site.index_title = 'Notes'
@@ -7,8 +10,33 @@ admin.site.index_title = 'Notes'
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ['name', 'note_count']
+
+    @admin.display(ordering='note_count')
+    def note_count(self, tag):
+        return Note.objects.filter(tag=tag).count()
+    
+    # Set a custom column name for the note count
+    note_count.short_description = 'Number of Notes'
+
+@admin.register(Folder)
+class FolderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'note_count']
+
+    @admin.display(ordering='note_count')
+    def note_count(self, folder):
+        numbers = Note.objects.filter(folder=folder).count()
+        url = (
+            reverse('admin:notetaking_note_changelist')
+            + '?'
+            + urlencode({
+                'note__folder': folder
+            }))
+        return format_html('<a href="{}">{} Note(s)</a>', url, numbers)
+    
+    # Set a custom column name for the note count
+    note_count.short_description = 'Number of Notes'
 
 @admin.register(Note)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ['title', 'tag', 'date']
+class NoteAdmin(admin.ModelAdmin):
+    list_display = ['title', 'folder', 'tag', 'date']
