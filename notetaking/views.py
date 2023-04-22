@@ -16,17 +16,50 @@ def readNote(request, title):
     except Note.DoesNotExist:
         return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
+@api_view(['GET', 'POST'])
 def newNote(request, tag, title, content, folder):
-    try:
-        note = Note.objects.get(title)
-        return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
-    except:
-        serializer = NoteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response({'message': "Please provide acceptable note details"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+    obj_tag = ""
+    obj_folder = ""
+    if not Tag.objects.filter(name=tag).exists():
+        obj_tag = Tag(name=tag)
+        obj_tag.save()
+    else:
+        obj_tag = Tag.objects.get(name=tag)
+
+    if not Folder.objects.filter(name=folder).exists():
+        obj_folder = Folder(name=folder)
+        obj_folder.save()
+    else:
+        obj_folder = Folder.objects.get(name=folder)
+
+    if not Note.objects.filter(title=title).exists():
+        obj_note = Note(
+            title=title,
+            tag=obj_tag,
+            folder=obj_folder,
+            content=content
+        )
+        obj_note.save()
+
+        obj_tag.notes_in_tag.add(obj_note)
+        obj_folder.notes_in_folder.add(obj_note)
+
+        obj_tag.save()
+        obj_folder.save()
+
+        serializer = NoteSerializer(obj_note)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
+    # if Note.objects.filter(title=title).exists():
+    #     return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
+    # elif not Tag.objects.filter(name=tag).exists():
+    #     return Response({'message': f'The tag {tag} not exists'}, status=status.HTTP_404_NOT_FOUND)
+    # else:
+    #     serializer = NoteSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response({'message': "Please provide acceptable note details"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 # For Admin site
 def hello(request):
@@ -71,3 +104,5 @@ def getList(request):
     for note in note_list:
         titles.append(note.title)
     return HttpResponse(titles)
+
+# http://127.0.0.1:8000/notetaking/create-note/health/how%20to%20strech%20neck/pass/health
