@@ -14,7 +14,14 @@ class TagAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='note_count')
     def note_count(self, tag):
-        return Note.objects.filter(tag=tag).count()
+        numbers = Note.objects.filter(tag=tag).count()
+        url = (
+            reverse('admin:notetaking_note_changelist')
+            + '?'
+            + urlencode({
+                'tag__id': tag.id
+            }))
+        return format_html('<a href="{}">{} Note(s)</a>', url, numbers)
     
     # Set a custom column name for the note count
     note_count.short_description = 'Number of Notes'
@@ -30,7 +37,7 @@ class FolderAdmin(admin.ModelAdmin):
             reverse('admin:notetaking_note_changelist')
             + '?'
             + urlencode({
-                'note__folder': folder
+                'folder__id': folder.id
             }))
         return format_html('<a href="{}">{} Note(s)</a>', url, numbers)
     

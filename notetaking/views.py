@@ -8,7 +8,7 @@ from notetaking.serializers import NoteSerializer
 
 # Create your views here.
 @api_view(['GET'])
-def get_note(request, title):
+def readNote(request, title):
     try:
         note = Note.objects.get(title=title)
         serializer = NoteSerializer(note)
@@ -16,6 +16,17 @@ def get_note(request, title):
     except Note.DoesNotExist:
         return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
 
+@api_view(['POST'])
+def newNote(request, tag, title, content, folder):
+    try:
+        note = Note.objects.get(title)
+        return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
+    except:
+        serializer = NoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({'message': "Please provide acceptable note details"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 # For Admin site
 def hello(request):
