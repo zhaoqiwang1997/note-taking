@@ -50,17 +50,19 @@ def newNote(request, tag, title, content, folder):
         serializer = NoteSerializer(obj_note)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
-    # if Note.objects.filter(title=title).exists():
-    #     return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
-    # elif not Tag.objects.filter(name=tag).exists():
-    #     return Response({'message': f'The tag {tag} not exists'}, status=status.HTTP_404_NOT_FOUND)
-    # else:
-    #     serializer = NoteSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response({'message': "Please provide acceptable note details"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
+@api_view(['GET', 'POST'])
+def updateNote(request, title):
+    try:
+        note = Note.objects.get(title=title)
+        serializer = NoteSerializer(note, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except Note.DoesNotExist:
+        return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
+    
 # For Admin site
 def hello(request):
     return HttpResponse("Hello world")

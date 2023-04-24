@@ -8,4 +8,5 @@ urlpatterns = [
     path('get-list/', views.getList),
     path('read/<str:title>', views.readNote),
     path('create/<str:tag>/<str:title>/<str:content>/<str:folder>', views.newNote),
+    path('update/<str:title>', views.updateNote),
 ]
