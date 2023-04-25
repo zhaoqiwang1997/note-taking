@@ -62,7 +62,17 @@ def updateNote(request, title):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Note.DoesNotExist:
         return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
-    
+
+@api_view(['GET', 'DELETE'])
+def deleteNote(request, title):
+    try:
+        note = Note.objects.get(title=title)
+        serializer = NoteSerializer(note)
+        serializer.delete(note)
+        return Response(status=status.HTTP_301_MOVED_PERMANENTLY)
+    except Note.DoesNotExist:
+        return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
+
 # For Admin site
 def hello(request):
     return HttpResponse("Hello world")

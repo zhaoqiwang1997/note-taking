@@ -9,4 +9,5 @@ urlpatterns = [
     path('read/<str:title>', views.readNote),
     path('create/<str:tag>/<str:title>/<str:content>/<str:folder>', views.newNote),
     path('update/<str:title>', views.updateNote),
+    path('delete/<str:title>', views.deleteNote),
 ]

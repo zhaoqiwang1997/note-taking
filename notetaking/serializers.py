@@ -24,7 +24,6 @@ class NoteSerializer(serializers.ModelSerializer):
     tag = TagSerializer()
     class Meta:
         model = Note
-        fields = ['title']
         fields = ['title', 'date', 'tag', 'folder', 'content']
 
     # def create(self, validated_data):
@@ -53,3 +52,6 @@ class NoteSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    def delete(self, instance):
+        instance.delete()
