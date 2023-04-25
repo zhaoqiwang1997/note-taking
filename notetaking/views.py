@@ -94,5 +94,3 @@ def getList(request):
     for note in note_list:
         titles.append(note.title)
     return HttpResponse(titles)
-
-# http://127.0.0.1:8000/notetaking/create-note/health/how%20to%20strech%20neck/pass/health
