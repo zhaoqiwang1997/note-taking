@@ -25,3 +25,10 @@ class Note(models.Model):
     folder = models.ForeignKey(
         'Folder', on_delete=models.SET_NULL, null=True, related_name='notes_in_folder', blank=True)
     content = models.TextField()
+
+# {
+#     "title": "ANZAC DAY",
+#     "tag": {"name": "Holiday"},
+#     "folder": {"name": "Culture"},
+#     "content": "25 April"
+# }

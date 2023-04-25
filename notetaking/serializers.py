@@ -26,10 +26,20 @@ class NoteSerializer(serializers.ModelSerializer):
         model = Note
         fields = ['title', 'date', 'tag', 'folder', 'content']
 
-    # def create(self, validated_data):
-    #     # Create and return a new MyModel instance using the validated data
-    #     return Note.objects.create(**validated_data)
+    def create(self, validated_data):
+        tag_data = validated_data.pop('tag')
+        folder_data = validated_data.pop('folder')
 
+        tag, created = Tag.objects.get_or_create(name=tag_data['name'])
+        folder, created = Folder.objects.get_or_create(name=folder_data['name'])
+
+        note = Note.objects.create(tag=tag, folder=folder, **validated_data)
+        
+        tag.notes_in_tag.add(note)
+        folder.notes_in_folder.add(note)
+
+        return note
+    
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
         instance.content = validated_data.get('content', instance.content)

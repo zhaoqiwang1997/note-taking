@@ -17,39 +17,17 @@ def readNote(request, title):
         return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET', 'POST'])
-def newNote(request, tag, title, content, folder):
-    obj_tag = ""
-    obj_folder = ""
-    if not Tag.objects.filter(name=tag).exists():
-        obj_tag = Tag(name=tag)
-        obj_tag.save()
-    else:
-        obj_tag = Tag.objects.get(name=tag)
-
-    if not Folder.objects.filter(name=folder).exists():
-        obj_folder = Folder(name=folder)
-        obj_folder.save()
-    else:
-        obj_folder = Folder.objects.get(name=folder)
-
-    if not Note.objects.filter(title=title).exists():
-        obj_note = Note(
-            title=title,
-            tag=obj_tag,
-            folder=obj_folder,
-            content=content
-        )
-        obj_note.save()
-
-        obj_tag.notes_in_tag.add(obj_note)
-        obj_folder.notes_in_folder.add(obj_note)
-
-        obj_tag.save()
-        obj_folder.save()
-
-        serializer = NoteSerializer(obj_note)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response({'message': 'Title already exists, use another one'}, status=status.HTTP_226_IM_USED)
+def newNote(request):
+    if 'title' in request.data:
+        if not Note.objects.filter(title=request.data['title']).exists():
+            serializer = NoteSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response({'message': 'Note already exists'}, status=status.HTTP_208_ALREADY_REPORTED)
+    return Response({'message': 'Title must be defined!'}, status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET', 'POST'])
 def updateNote(request, title):
@@ -59,7 +37,7 @@ def updateNote(request, title):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
     except Note.DoesNotExist:
         return Response({'message': 'No such note!'}, status=status.HTTP_404_NOT_FOUND)
 
